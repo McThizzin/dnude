@@ -1,0 +1,22 @@
+{
+    "default_tags": ["document"],
+    "tag_map": {
+        "1": "engineering",
+        "2": "plans",
+        "3": "critical",
+        "4": "financial",
+        "5": "legal",
+        "6": "draft",
+        "7": "final",
+        "8": "technical",
+        "9": "contract",
+        "10": "report",
+        "11": "policy",
+        "12": "review",
+        "13": "approved",
+        "14": "archived",
+        "15": "confidential",
+        "16": "internal",
+        "17": "reference"
+    }
+}
