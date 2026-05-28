@@ -116,9 +116,10 @@ class DocConverterApp(ctk.CTk):
         self.selected_files = []
         self.tag_vars = {}
 
+        font_family = "Hack Nerd Font" if sys.platform.startswith("linux") else "Consolas"
         self.label = ctk.CTkLabel(
             self, text="-strip-",
-            font=("Consolas", "Courier New", "monospace", 24, "bold"),
+            font=ctk.CTkFont(family=font_family, size=24, weight="bold"),
             text_color="#ff6b35"
         )
         self.label.pack(pady=20)
