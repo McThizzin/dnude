@@ -6,7 +6,6 @@ paths/directories/globs into a concrete file list before conversion.
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -159,5 +158,5 @@ def process_single_file(
                 error=f"Unsupported file type: {filename}",
             )
 
-    except Exception as e:  # noqa: BLE001 - surface any failure as a result, not a crash
+    except Exception as e:
         return ConversionResult(filename=filename, success=False, error=str(e))

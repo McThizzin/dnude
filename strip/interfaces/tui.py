@@ -35,7 +35,7 @@ class StripApp(App):
     """strip's interactive TUI."""
 
     TITLE = "strip"
-    
+
     CSS = """
     #main {
         height: 1fr;
@@ -74,9 +74,7 @@ class StripApp(App):
                 yield Label("Output Dir:")
                 yield Input(value="./output", id="output-input")
                 yield Label("Tags (comma-sep):")
-                yield Input(
-                    placeholder=", ".join(load_default_tags()), id="tags-input"
-                )
+                yield Input(placeholder=", ".join(load_default_tags()), id="tags-input")
                 yield Checkbox("Split PDF pages", id="split-checkbox")
                 yield Button("Convert", id="convert-btn", variant="success")
                 yield ProgressBar(id="progress", total=100)
@@ -167,7 +165,9 @@ class StripApp(App):
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {
-                executor.submit(process_single_file, f, output_dir, active_tags, timestamp, split): f
+                executor.submit(
+                    process_single_file, f, output_dir, active_tags, timestamp, split
+                ): f
                 for f in files
             }
             for future in as_completed(futures):

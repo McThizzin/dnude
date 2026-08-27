@@ -75,9 +75,7 @@ def is_unchanged(
     if not entry:
         return False
     return (
-        entry.get("hash") == file_hash
-        and entry.get("tags") == tags
-        and entry.get("split") == split
+        entry.get("hash") == file_hash and entry.get("tags") == tags and entry.get("split") == split
     )
 
 

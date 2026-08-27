@@ -13,7 +13,6 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -21,7 +20,12 @@ from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
 from strip.core.config import load_default_tags
-from strip.core.engine import SUPPORTED_EXTENSIONS, ConversionResult, discover_files, process_single_file
+from strip.core.engine import (
+    SUPPORTED_EXTENSIONS,
+    ConversionResult,
+    discover_files,
+    process_single_file,
+)
 from strip.core.manifest import compute_hash, is_unchanged, load_manifest, record, save_manifest
 from strip.core.watcher import DirectoryWatcher
 
@@ -36,13 +40,9 @@ err_console = Console(stderr=True)
 
 @app.command()
 def convert(
-    paths: list[str] = typer.Argument(
-        ..., help="Files, directories, or glob patterns to convert."
-    ),
-    output: Path = typer.Option(
-        Path("./output"), "--output", "-o", help="Output directory."
-    ),
-    tags: Optional[str] = typer.Option(
+    paths: list[str] = typer.Argument(..., help="Files, directories, or glob patterns to convert."),
+    output: Path = typer.Option(Path("./output"), "--output", "-o", help="Output directory."),
+    tags: str | None = typer.Option(
         None, "--tags", "-t", help="Comma-separated tags, e.g. --tags research,urgent."
     ),
     split: bool = typer.Option(
@@ -54,7 +54,7 @@ def convert(
     dry_run: bool = typer.Option(
         False, "--dry-run", help="Show what would convert without writing any files."
     ),
-    timestamp: Optional[str] = typer.Option(
+    timestamp: str | None = typer.Option(
         None, "--timestamp", help="Override converted_date (ISO format). Defaults to now."
     ),
     quiet: bool = typer.Option(
@@ -85,15 +85,23 @@ def convert(
 
     if dry_run:
         if json_output:
-            print(json_module.dumps({
-                "dry_run": True,
-                "files": [str(f) for f in files],
-                "output_dir": str(output),
-                "tags": active_tags,
-                "split": split,
-            }, indent=2))
+            print(
+                json_module.dumps(
+                    {
+                        "dry_run": True,
+                        "files": [str(f) for f in files],
+                        "output_dir": str(output),
+                        "tags": active_tags,
+                        "split": split,
+                    },
+                    indent=2,
+                )
+            )
         else:
-            console.print(f"[bold cyan]Dry run[/bold cyan] — {len(files)} file(s) would convert to [bold]{output}[/bold]")
+            console.print(
+                f"[bold cyan]Dry run[/bold cyan] — {len(files)} file(s) "
+                f"would convert to [bold]{output}[/bold]"
+            )
             console.print(f"Tags: {', '.join(active_tags)}   Split pages: {split}")
             for f in files:
                 console.print(f"  • {f}")
@@ -151,7 +159,8 @@ def convert(
                         result = future.result()
                         results.append(result)
                         status = "[green]✅[/green]" if result.success else "[red]❌[/red]"
-                        console.print(f"{status} {result.filename}" + (f" — {result.error}" if result.error else ""))
+                        suffix = f" — {result.error}" if result.error else ""
+                        console.print(f"{status} {result.filename}{suffix}")
                         progress.advance(task_id)
 
     if incremental:
@@ -161,25 +170,32 @@ def convert(
     failed = [r for r in results if not r.success]
 
     if json_output:
-        print(json_module.dumps({
-            "total": len(results) + len(skipped),
-            "succeeded": len(succeeded),
-            "failed": len(failed),
-            "skipped": skipped,
-            "results": [
+        print(
+            json_module.dumps(
                 {
-                    "filename": r.filename,
-                    "success": r.success,
-                    "output_paths": r.output_paths,
-                    "error": r.error,
-                    "word_count": r.word_count,
-                }
-                for r in results
-            ],
-        }, indent=2))
+                    "total": len(results) + len(skipped),
+                    "succeeded": len(succeeded),
+                    "failed": len(failed),
+                    "skipped": skipped,
+                    "results": [
+                        {
+                            "filename": r.filename,
+                            "success": r.success,
+                            "output_paths": r.output_paths,
+                            "error": r.error,
+                            "word_count": r.word_count,
+                        }
+                        for r in results
+                    ],
+                },
+                indent=2,
+            )
+        )
     elif quiet:
         skip_note = f", {len(skipped)} unchanged" if incremental else ""
-        console.print(f"{len(succeeded)}/{len(results)} converted, {len(failed)} failed{skip_note}.")
+        console.print(
+            f"{len(succeeded)}/{len(results)} converted, {len(failed)} failed{skip_note}."
+        )
     else:
         table = Table(title="Conversion Summary")
         table.add_column("File")
@@ -188,8 +204,12 @@ def convert(
         table.add_column("Output")
         for r in results:
             status = "[green]Success[/green]" if r.success else f"[red]Failed[/red]: {r.error}"
-            output_display = ", ".join(Path(p).name for p in r.output_paths) if r.output_paths else "—"
-            table.add_row(r.filename, status, str(r.word_count) if r.success else "—", output_display)
+            output_display = (
+                ", ".join(Path(p).name for p in r.output_paths) if r.output_paths else "—"
+            )
+            table.add_row(
+                r.filename, status, str(r.word_count) if r.success else "—", output_display
+            )
         for name in skipped:
             table.add_row(name, "[dim]Skipped (unchanged)[/dim]", "—", "—")
         console.print(table)
@@ -206,10 +226,8 @@ def convert(
 @app.command()
 def watch(
     directory: Path = typer.Argument(..., help="Directory to monitor for new or changed files."),
-    output: Path = typer.Option(
-        Path("./output"), "--output", "-o", help="Output directory."
-    ),
-    tags: Optional[str] = typer.Option(
+    output: Path = typer.Option(Path("./output"), "--output", "-o", help="Output directory."),
+    tags: str | None = typer.Option(
         None, "--tags", "-t", help="Comma-separated tags, e.g. --tags research,urgent."
     ),
     split: bool = typer.Option(
@@ -278,12 +296,14 @@ def watch(
         if result.success:
             record(manifest, path, file_hash, active_tags, split, result.output_paths)
             save_manifest(output, manifest)
-            emit({
-                "status": "converted",
-                "filename": result.filename,
-                "output_paths": result.output_paths,
-                "word_count": result.word_count,
-            })
+            emit(
+                {
+                    "status": "converted",
+                    "filename": result.filename,
+                    "output_paths": result.output_paths,
+                    "word_count": result.word_count,
+                }
+            )
         else:
             emit({"status": "failed", "filename": result.filename, "error": result.error})
 
@@ -292,7 +312,8 @@ def watch(
             existing = discover_files([str(directory)])
         else:
             existing = sorted(
-                p for p in directory.iterdir()
+                p
+                for p in directory.iterdir()
                 if p.is_file() and p.suffix.lower() in SUPPORTED_EXTENSIONS
             )
         if not json_output:
@@ -300,7 +321,12 @@ def watch(
         for f in existing:
             convert_path(str(f))
 
-    watcher = DirectoryWatcher(directory, convert_path, debounce_seconds=debounce, recursive=recursive)
+    watcher = DirectoryWatcher(
+        directory,
+        convert_path,
+        debounce_seconds=debounce,
+        recursive=recursive,
+    )
 
     if not json_output:
         console.print(

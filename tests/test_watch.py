@@ -14,6 +14,7 @@ SAMPLE_XML = '<order id="42"><item>Punch cards</item></order>'
 
 # ---------- manifest.py ----------
 
+
 def test_manifest_round_trip(tmp_path):
     manifest = {}
     xml_path = tmp_path / "data.xml"
@@ -76,6 +77,7 @@ def test_load_manifest_corrupt_file(tmp_path):
 
 
 # ---------- watcher.py ----------
+
 
 def test_directory_watcher_fires_on_new_file(tmp_path):
     seen = []

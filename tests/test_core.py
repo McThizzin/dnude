@@ -28,6 +28,7 @@ SAMPLE_XML = """<?xml version="1.0"?>
 
 # ---------- frontmatter.py ----------
 
+
 def test_frontmatter_basic_fields():
     fm = create_frontmatter("report.pdf", ["research", "urgent"], "2026-08-26 10:00:00")
     assert "source: report.pdf" in fm
@@ -51,11 +52,14 @@ def test_frontmatter_escapes_special_characters():
 
 
 def test_frontmatter_extra_fields():
-    fm = create_frontmatter("x.docx", ["document"], "2026-08-26 10:00:00", extra={"word_count": 150})
+    fm = create_frontmatter(
+        "x.docx", ["document"], "2026-08-26 10:00:00", extra={"word_count": 150}
+    )
     assert "word_count: 150" in fm
 
 
 # ---------- converters.py: xml_to_md ----------
+
 
 def test_xml_to_md_preserves_attributes():
     md = xml_to_md(SAMPLE_XML)
@@ -79,6 +83,7 @@ def test_xml_to_md_root_heading():
 
 
 # ---------- converters.py: pdf_to_md ----------
+
 
 def _make_sample_pdf(path: Path):
     from reportlab.pdfgen import canvas
@@ -119,6 +124,7 @@ def test_pdf_to_md_split(sample_pdf):
 
 # ---------- engine.py: process_single_file ----------
 
+
 def test_process_single_file_xml(tmp_path):
     xml_path = tmp_path / "data.xml"
     xml_path.write_text(SAMPLE_XML, encoding="utf-8")
@@ -139,7 +145,9 @@ def test_process_single_file_xml(tmp_path):
 
 def test_process_single_file_pdf_split(tmp_path, sample_pdf):
     output_dir = tmp_path / "out"
-    result = process_single_file(sample_pdf, output_dir, ["test"], "2026-08-26 10:00:00", split=True)
+    result = process_single_file(
+        sample_pdf, output_dir, ["test"], "2026-08-26 10:00:00", split=True
+    )
 
     assert result.success
     assert len(result.output_paths) == 2
@@ -236,6 +244,7 @@ def test_batch_one_bad_file_does_not_block_others(tmp_path):
 
 # ---------- engine.py: discover_files ----------
 
+
 def test_discover_files_directory_recursive(tmp_path):
     (tmp_path / "sub").mkdir()
     (tmp_path / "a.pdf").write_text("x")
@@ -270,6 +279,7 @@ def test_discover_files_skips_missing_paths():
 
 
 # ---------- config.py ----------
+
 
 def test_load_default_tags_missing_file(tmp_path):
     tags = config_mod.load_default_tags(tmp_path / "nope.json")
