@@ -21,8 +21,8 @@ plus makes `python -m strip` work.
 # Basic: convert a couple of files with tags
 strip convert report.pdf data.xml --output ./vault --tags research
 
-# Agent workflow: split PDF pages for RAG chunking
-strip convert ./papers/*.pdf -o ./chunks --split --tags paper,ml
+# Split PDF pages
+strip convert ./papers/*.pdf -o ./pages --split --tags paper,ml
 
 # Point it at a directory — recurses and picks up .pdf/.docx/.xml
 strip convert ./docs/ --output ./vault
@@ -36,7 +36,7 @@ strip convert report.pdf -o ./out --tags draft --quiet
 # Machine-readable output for agent tool-calling
 strip convert report.pdf -o ./out --json
 
-# Skip files unchanged since last run (great for agents re-running over the same folder)
+# Skip files unchanged since last run
 strip convert ./vault/ -o ./out --incremental
 ```
 
@@ -54,7 +54,7 @@ strip convert ./vault/ -o ./out --incremental
 | `--json` | off | Machine-readable JSON summary on stdout |
 | `--incremental` | off | Skip files whose content, tags, and `--split` setting are unchanged since the last run (tracked via `.strip_manifest.json` in the output dir) |
 
-**Exit codes** — useful for scripting or agent tool-calling:
+**Exit codes**
 
 | Code | Meaning |
 |---|---|
@@ -90,13 +90,13 @@ sessions.
 ### Watch — auto-convert on file drop
 
 ```bash
-# Watch a folder; convert existing files first, then anything new that lands
+# Watch a folder; convert existing files first, then anything new.
 strip watch ./inbox --output ./vault --tags research
 
-# Skip the initial pass, only react to new/changed files from now on
+# Skip the initial pass, only react to new/changed files.
 strip watch ./inbox --no-initial
 
-# Non-recursive, custom debounce, JSON events for piping to an agent
+# Non-recursive, custom debounce, JSON events.
 strip watch ./inbox --no-recursive --debounce 2.0 --json
 ```
 
@@ -170,7 +170,7 @@ If the file is missing or malformed, `strip` silently falls back to
 
 ## XML conversion notes
 
-XML is converted with an agent-aware walker that preserves attributes
+XML is converted with a walker that preserves attributes
 and hierarchy instead of flattening them away:
 
 ```xml
@@ -204,5 +204,4 @@ python -m pytest tests/ -v
 
 ## Roadmap
 
-Nothing currently planned — `strip watch` (originally deferred to
-"phase 2" in the spec) is implemented above.
+Refine TUI functionality.
