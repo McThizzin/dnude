@@ -1,79 +1,208 @@
 # strip
 
-A cross-platform GUI tool for converting `.docx`, `.xml`, and `.pdf` files to Markdown with YAML frontmatter tagging.
+Document ingestion engine. Converts `.pdf`, `.docx`, and `.xml` files into structured, frontmatter-tagged Markdown.
 
-## Features
+## Install
 
-- **Batch conversion** — process multiple files at once
-- **Parallel processing** — uses a thread pool (up to 8 workers) for fast conversions
-- **Tagging** — apply YAML frontmatter tags via checkboxes or configurable presets
-- **Formats supported**:
-  - `.docx` → Markdown (via `mammoth`)
-  - `.xml`  → Markdown (iterative parser, safe for deep nesting)
-  - `.pdf`  → Markdown (one `.md` per page, via `pdfplumber`)
-- **Output** — each source file gets its own folder with generated Markdown files
-
-## Dependencies
-
-- Python 3.8+
-- [mammoth](https://pypi.org/project/mammoth/)
-- [pdfplumber](https://pypi.org/project/pdfplumber/)
-- [customtkinter](https://pypi.org/project/customtkinter/)
-
-Install with:
-
-```
-pip install mammoth pdfplumber customtkinter
+```bash
+python3 -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e .
 ```
 
-On Linux you may also need `python3-tk`:
-
-```
-sudo apt install python3-tk   # Debian/Ubuntu
-sudo dnf install python3-tkinter   # Fedora
-```
+This installs the `strip` command via the `[project.scripts]` entry point,
+plus makes `python -m strip` work.
 
 ## Usage
 
-```
-python strip.py
+### CLI — one-shot, scriptable
+
+```bash
+# Basic: convert a couple of files with tags
+strip convert report.pdf data.xml --output ./vault --tags research
+
+# Agent workflow: split PDF pages for RAG chunking
+strip convert ./papers/*.pdf -o ./chunks --split --tags paper,ml
+
+# Point it at a directory — recurses and picks up .pdf/.docx/.xml
+strip convert ./docs/ --output ./vault
+
+# Preview what would happen without writing anything
+strip convert ./docs/ --dry-run
+
+# Pipe-friendly: quiet one-line summary
+strip convert report.pdf -o ./out --tags draft --quiet
+
+# Machine-readable output for agent tool-calling
+strip convert report.pdf -o ./out --json
+
+# Skip files unchanged since last run (great for agents re-running over the same folder)
+strip convert ./vault/ -o ./out --incremental
 ```
 
-1. Click **Select Files** and choose one or more `.docx` / `.xml` / `.pdf` files.
-2. Check the tags to include in the YAML frontmatter.
-3. Click **Start Conversion** and pick an output folder.
+**Flags**
 
-### Output structure
+| Flag | Default | Description |
+|---|---|---|
+| `--output, -o` | `./output` | Output directory |
+| `--tags, -t` | from `tags_config.json`, else `document` | Comma-separated tags |
+| `--split` | off | PDF only: one `.md` per page instead of a combined file |
+| `--workers, -w` | `min(8, cpu_count)` | Thread pool size |
+| `--dry-run` | off | Show what would convert, write nothing |
+| `--timestamp` | now | Override `converted_date` (ISO format) |
+| `--quiet, -q` | off | One-line summary instead of the table |
+| `--json` | off | Machine-readable JSON summary on stdout |
+| `--incremental` | off | Skip files whose content, tags, and `--split` setting are unchanged since the last run (tracked via `.strip_manifest.json` in the output dir) |
+
+**Exit codes** — useful for scripting or agent tool-calling:
+
+| Code | Meaning |
+|---|---|
+| `0` | All files converted successfully |
+| `1` | At least one file failed |
+| `2` | No valid input files found |
+
+### TUI — interactive dashboard
+
+Run `strip` with no arguments to drop into the Textual TUI:
+
+```bash
+strip
+```
+
+Enter a path, glob, or comma-separated list of paths, set an output
+directory and tags, optionally toggle "Split PDF pages," and hit
+**Enter** or click **Convert**. The log panel streams live per-file
+success/failure as the thread pool works through the batch.
+
+| Key | Action |
+|---|---|
+| `Tab` / `Shift+Tab` | Cycle focus between fields |
+| `Enter` | Submit the focused input, or trigger Convert |
+| `Escape` | Clear the focused field |
+| `?` | Show a quick keybinding reminder in the log |
+| `q` | Quit |
+
+Open the command palette (the small ⭘ icon in the header) to search
+commands, including switching themes — your choice is remembered across
+sessions.
+
+### Watch — auto-convert on file drop
+
+```bash
+# Watch a folder; convert existing files first, then anything new that lands
+strip watch ./inbox --output ./vault --tags research
+
+# Skip the initial pass, only react to new/changed files from now on
+strip watch ./inbox --no-initial
+
+# Non-recursive, custom debounce, JSON events for piping to an agent
+strip watch ./inbox --no-recursive --debounce 2.0 --json
+```
+
+`watch` runs until you hit Ctrl+C. It uses the same manifest as
+`--incremental`, so restarting a watch session doesn't re-convert files
+it already handled and that haven't changed — only genuinely new or
+modified files get processed. Writes are debounced (default 1 second)
+so a file still being copied or saved doesn't get read mid-write.
+
+| Flag | Default | Description |
+|---|---|---|
+| `--output, -o` | `./output` | Output directory |
+| `--tags, -t` | from config, else `document` | Comma-separated tags |
+| `--split` | off | PDF only: one `.md` per page |
+| `--debounce` | `1.0` | Seconds of quiet before converting a changed file |
+| `--initial / --no-initial` | `--initial` | Convert existing files on startup |
+| `--recursive / --no-recursive` | `--recursive` | Watch subdirectories too |
+| `--json` | off | One JSON object per line instead of Rich output |
+
+## Output layout
+
+Each input file gets its own subfolder in the output directory, named
+after the file (without extension), to avoid collisions and leave room
+for co-located assets later:
 
 ```
 output/
-├── document1/
-│   ├── document1.md
-│   └── ...
-└── report/
-    ├── report_p001.md
-    ├── report_p002.md
-    └── ...
+├── report/
+│   └── report.md          # combined PDF (default)
+├── data/
+│   └── data.md             # XML
+└── notes/
+    └── notes.md             # DOCX
 ```
 
-Each Markdown file includes YAML frontmatter:
+With `--split`, a PDF gets one file per page instead:
+
+```
+output/report/
+├── report_p001.md
+├── report_p002.md
+└── report_p003.md
+```
+
+Every output file starts with YAML frontmatter:
 
 ```yaml
 ---
 source: report.pdf
-converted_date: 2026-05-28 12:30:00
-tags: [engineering, draft]
+converted_date: '2026-08-26 10:00:00'
+tags:
+- research
+- q3
+word_count: 412
 ---
 ```
 
 ## Configuration
 
-Edit `tags_config.json` to customize tag presets:
+`tags_config.json` (optional) sets the default tags used when `--tags`
+isn't passed:
 
-- `default_tags` — applied when no checkboxes are selected
-- `tag_map` — maps numeric keys to tag labels (shown as checkboxes)
+```json
+{
+  "default_tags": ["document"]
+}
+```
 
-## Cross-platform notes
+If the file is missing or malformed, `strip` silently falls back to
+`["document"]` rather than failing.
 
-- **Font** — falls back through `Consolas` → `Courier New` → `monospace` on Linux
-- **Icon** — `.ico` is used on Windows; gracefully skipped on Linux without error
+## XML conversion notes
+
+XML is converted with an agent-aware walker that preserves attributes
+and hierarchy instead of flattening them away:
+
+```xml
+<order id="42" status="open">
+  <customer name="Ada Lovelace">VIP</customer>
+</order>
+```
+
+becomes:
+
+```markdown
+# order
+- **order** `id="42" status="open"`
+  - **customer** `name="Ada Lovelace"`
+    > VIP
+```
+
+## Error handling
+
+A single bad file (corrupt PDF, malformed XML, unreadable/permission-denied
+file) fails independently — it's reported with an error message and the
+rest of the batch keeps going. The run's exit code (`1`) reflects that a
+partial failure occurred, without aborting files that succeeded.
+
+## Development
+
+```bash
+pip install -e . pytest reportlab pyyaml python-docx
+python -m pytest tests/ -v
+```
+
+## Roadmap
+
+Nothing currently planned — `strip watch` (originally deferred to
+"phase 2" in the spec) is implemented above.
