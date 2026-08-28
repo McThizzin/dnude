@@ -1,4 +1,4 @@
-# strip
+# dnude
 
 Document ingestion engine. Converts `.pdf`, `.docx`, and `.xml` files into structured, frontmatter-tagged Markdown.
 
@@ -10,8 +10,8 @@ source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e .
 ```
 
-This installs the `strip` command via the `[project.scripts]` entry point,
-plus makes `python -m strip` work.
+This installs the `dnude` command via the `[project.scripts]` entry point,
+plus makes `python -m dnude` work.
 
 ## Usage
 
@@ -19,25 +19,25 @@ plus makes `python -m strip` work.
 
 ```bash
 # Basic: convert a couple of files with tags
-strip convert report.pdf data.xml --output ./vault --tags research
+dnude convert report.pdf data.xml --output ./vault --tags research
 
 # Split PDF pages
-strip convert ./papers/*.pdf -o ./pages --split --tags paper,ml
+dnude convert ./papers/*.pdf -o ./pages --split --tags paper,ml
 
 # Point it at a directory — recurses and picks up .pdf/.docx/.xml
-strip convert ./docs/ --output ./vault
+dnude convert ./docs/ --output ./vault
 
 # Preview what would happen without writing anything
-strip convert ./docs/ --dry-run
+dnude convert ./docs/ --dry-run
 
 # Pipe-friendly: quiet one-line summary
-strip convert report.pdf -o ./out --tags draft --quiet
+dnude convert report.pdf -o ./out --tags draft --quiet
 
 # Machine-readable output for agent tool-calling
-strip convert report.pdf -o ./out --json
+dnude convert report.pdf -o ./out --json
 
 # Skip files unchanged since last run
-strip convert ./vault/ -o ./out --incremental
+dnude convert ./vault/ -o ./out --incremental
 ```
 
 **Flags**
@@ -52,7 +52,7 @@ strip convert ./vault/ -o ./out --incremental
 | `--timestamp` | now | Override `converted_date` (ISO format) |
 | `--quiet, -q` | off | One-line summary instead of the table |
 | `--json` | off | Machine-readable JSON summary on stdout |
-| `--incremental` | off | Skip files whose content, tags, and `--split` setting are unchanged since the last run (tracked via `.strip_manifest.json` in the output dir) |
+| `--incremental` | off | Skip files whose content, tags, and `--split` setting are unchanged since the last run (tracked via `.dnude_manifest.json` in the output dir) |
 
 **Exit codes**
 
@@ -64,10 +64,10 @@ strip convert ./vault/ -o ./out --incremental
 
 ### TUI — interactive dashboard
 
-Run `strip` with no arguments to drop into the Textual TUI:
+Run `dnude` with no arguments to drop into the Textual TUI:
 
 ```bash
-strip
+dnude
 ```
 
 Enter a path, glob, or comma-separated list of paths, set an output
@@ -91,13 +91,13 @@ sessions.
 
 ```bash
 # Watch a folder; convert existing files first, then anything new.
-strip watch ./inbox --output ./vault --tags research
+dnude watch ./inbox --output ./vault --tags research
 
 # Skip the initial pass, only react to new/changed files.
-strip watch ./inbox --no-initial
+dnude watch ./inbox --no-initial
 
 # Non-recursive, custom debounce, JSON events.
-strip watch ./inbox --no-recursive --debounce 2.0 --json
+dnude watch ./inbox --no-recursive --debounce 2.0 --json
 ```
 
 `watch` runs until you hit Ctrl+C. It uses the same manifest as
@@ -165,7 +165,7 @@ isn't passed:
 }
 ```
 
-If the file is missing or malformed, `strip` silently falls back to
+If the file is missing or malformed, `dnude` silently falls back to
 `["document"]` rather than failing.
 
 ## XML conversion notes

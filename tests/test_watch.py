@@ -6,8 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from strip.core.manifest import compute_hash, is_unchanged, load_manifest, record, save_manifest
-from strip.core.watcher import DirectoryWatcher
+from dnude.core.manifest import compute_hash, is_unchanged, load_manifest, record, save_manifest
+from dnude.core.watcher import DirectoryWatcher
 
 SAMPLE_XML = '<order id="42"><item>Punch cards</item></order>'
 
@@ -72,7 +72,7 @@ def test_load_manifest_missing_file(tmp_path):
 def test_load_manifest_corrupt_file(tmp_path):
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    (out_dir / ".strip_manifest.json").write_text("{not valid json", encoding="utf-8")
+    (out_dir / ".dnude_manifest.json").write_text("{not valid json", encoding="utf-8")
     assert load_manifest(out_dir) == {}
 
 

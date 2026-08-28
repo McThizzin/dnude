@@ -9,8 +9,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from strip.core.converters import docx_to_md, pdf_to_md, xml_to_md
-from strip.core.frontmatter import create_frontmatter
+from dnude.core.converters import docx_to_md, pdf_to_md, xml_to_md
+from dnude.core.frontmatter import create_frontmatter
 
 SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".xml"}
 

@@ -26,15 +26,15 @@ from textual.widgets import (
     RichLog,
 )
 
-from strip.core.config import load_default_tags
-from strip.core.engine import discover_files, process_single_file
-from strip.core.settings import load_theme, save_theme
+from dnude.core.config import load_default_tags
+from dnude.core.engine import discover_files, process_single_file
+from dnude.core.settings import load_theme, save_theme
 
 
-class StripApp(App):
-    """strip's interactive TUI."""
+class DnudeApp(App):
+    """dnude's interactive TUI."""
 
-    TITLE = "strip"
+    TITLE = "dnude"
 
     CSS = """
     #main {
@@ -197,7 +197,7 @@ class StripApp(App):
 
 
 def main() -> None:
-    StripApp().run()
+    DnudeApp().run()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 [project]
-name = "strip"
+name = "dnude"
 version = "2.0.0"
 description = "Document ingestion engine: convert PDF/DOCX/XML into frontmatter-tagged Markdown"
 requires-python = ">=3.10"
@@ -17,14 +17,14 @@ dependencies = [
 dev = ["ruff"]
 
 [project.scripts]
-strip = "strip.main:main"
+dnude = "dnude.main:main"
 
 [build-system]
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["strip*"]
+include = ["dnude*"]
 
 [tool.ruff]
 target-version = "py310"

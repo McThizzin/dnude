@@ -16,7 +16,7 @@ from pathlib import Path
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-from strip.core.engine import SUPPORTED_EXTENSIONS
+from dnude.core.engine import SUPPORTED_EXTENSIONS
 
 
 class _DebounceHandler(FileSystemEventHandler):

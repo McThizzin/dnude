@@ -1,16 +1,16 @@
 """Content-hash manifest for incremental re-conversion.
 
 Backs two features:
-    - `strip convert --incremental`: skip files whose content, tags, and
+    - `dnude convert --incremental`: skip files whose content, tags, and
       split setting haven't changed since the last successful run.
-    - `strip watch`: on restart, skip re-converting files that were
+    - `dnude watch`: on restart, skip re-converting files that were
       already handled and haven't changed since.
 
-Agents that re-run `strip` repeatedly over the same directory (a common
+Agents that re-run `dnude` repeatedly over the same directory (a common
 pattern for keeping a vault in sync) shouldn't pay to re-read and
 re-convert documents that haven't changed. The manifest is a plain JSON
 file living alongside the output, so it's inspectable and diffable like
-everything else `strip` produces.
+everything else `dnude` produces.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-MANIFEST_FILENAME = ".strip_manifest.json"
+MANIFEST_FILENAME = ".dnude_manifest.json"
 
 
 def _manifest_path(output_dir: str | Path) -> Path:

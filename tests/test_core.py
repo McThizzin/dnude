@@ -11,10 +11,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from strip.core import config as config_mod
-from strip.core.converters import pdf_to_md, xml_to_md
-from strip.core.engine import ConversionResult, discover_files, process_single_file
-from strip.core.frontmatter import create_frontmatter
+from dnude.core import config as config_mod
+from dnude.core.converters import pdf_to_md, xml_to_md
+from dnude.core.engine import ConversionResult, discover_files, process_single_file
+from dnude.core.frontmatter import create_frontmatter
 
 SAMPLE_XML = """<?xml version="1.0"?>
 <order id="42" status="open">

@@ -1,8 +1,8 @@
 """Persisted user-level TUI preferences (currently: theme).
 
-Stored under ~/.config/strip/ rather than the project directory, so the
+Stored under ~/.config/dnude/ rather than the project directory, so the
 choice follows the user across whatever directory they happen to run
-`strip` from, the same way most terminal tools handle preferences.
+`dnude` from, the same way most terminal tools handle preferences.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-SETTINGS_DIR = Path.home() / ".config" / "strip"
+SETTINGS_DIR = Path.home() / ".config" / "dnude"
 SETTINGS_FILE = SETTINGS_DIR / "settings.json"
 
 

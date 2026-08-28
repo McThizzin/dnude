@@ -1,4 +1,4 @@
-"""Typer CLI: `strip convert [PATHS...] [OPTIONS]`.
+"""Typer CLI: `dnude convert [PATHS...] [OPTIONS]`.
 
 Exit codes (useful for scripting / agent tool-calling):
     0 = all files converted successfully
@@ -19,18 +19,18 @@ from rich.console import Console
 from rich.progress import BarColumn, Progress, TextColumn, TimeElapsedColumn
 from rich.table import Table
 
-from strip.core.config import load_default_tags
-from strip.core.engine import (
+from dnude.core.config import load_default_tags
+from dnude.core.engine import (
     SUPPORTED_EXTENSIONS,
     ConversionResult,
     discover_files,
     process_single_file,
 )
-from strip.core.manifest import compute_hash, is_unchanged, load_manifest, record, save_manifest
-from strip.core.watcher import DirectoryWatcher
+from dnude.core.manifest import compute_hash, is_unchanged, load_manifest, record, save_manifest
+from dnude.core.watcher import DirectoryWatcher
 
 app = typer.Typer(
-    name="strip",
+    name="dnude",
     help="Convert PDF/DOCX/XML files into frontmatter-tagged Markdown for agent consumption.",
     add_completion=False,
 )
@@ -67,7 +67,7 @@ def convert(
         False,
         "--incremental",
         help="Skip files unchanged since the last successful run (tracked via a "
-        ".strip_manifest.json in the output dir). Re-run tags/--split changes still reconvert.",
+        ".dnude_manifest.json in the output dir). Re-run tags/--split changes still reconvert.",
     ),
 ):
     """Convert PDF, DOCX, and XML files into frontmatter-tagged Markdown."""

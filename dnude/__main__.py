@@ -1,4 +1,4 @@
-from strip.main import main
+from dnude.main import main
 
 if __name__ == "__main__":
     main()
